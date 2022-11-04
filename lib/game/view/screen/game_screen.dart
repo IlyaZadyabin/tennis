@@ -1,30 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tennis/home/view/cubit/home_cubit.dart';
-import 'package:tennis/home/view/screen/components/single_player_part.dart';
+import 'package:tennis/game/view/cubit/game_cubit.dart';
+import 'package:tennis/game/view/screen/components/single_player_part.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class GameScreen extends StatelessWidget {
+  const GameScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => HomeCubit(),
-      child: _HomeScreen(),
+      create: (_) => GameCubit(),
+      child: _GameScreen(),
     );
   }
 }
 
-class _HomeScreen extends StatelessWidget {
+class _GameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<HomeCubit>();
+    final cubit = context.read<GameCubit>();
+    ScaffoldFeatureController<SnackBar, SnackBarClosedReason>?
+        snackBarController;
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-          child: BlocBuilder<HomeCubit, HomeState>(
+          child: BlocConsumer<GameCubit, GameState>(
+            listener: (context, state) {
+              if (state.status.isGameEnded || state.status.isSetEnded) {
+                snackBarController = ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '${state.winner.fullName} won the '
+                      '${state.status.isGameEnded ? 'game' : 'set'}!',
+                    ),
+                  ),
+                );
+              } else {
+                snackBarController?.close();
+                snackBarController = null;
+              }
+            },
             builder: (context, state) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,

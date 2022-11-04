@@ -1,20 +1,32 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tennis/home/models/player.dart';
+import 'package:tennis/game/models/player.dart';
 
-part 'home_cubit.freezed.dart';
-part 'home_state.dart';
+part 'game_cubit.freezed.dart';
+part 'game_state.dart';
 
 enum PlayerType {
   player1,
   player2,
 }
 
-class HomeCubit extends Cubit<HomeState> {
-  HomeCubit() : super(const HomeState()) {
+class GameCubit extends Cubit<GameState> {
+  GameCubit() : super(const GameState()) {
     nameController1 = TextEditingController();
     nameController2 = TextEditingController();
+
+    nameController1.addListener(() {
+      if (state.errorTextPlayer1?.isNotEmpty ?? false) {
+        emit(state.copyWith(errorTextPlayer1: null));
+      }
+    });
+
+    nameController2.addListener(() {
+      if (state.errorTextPlayer2?.isNotEmpty ?? false) {
+        emit(state.copyWith(errorTextPlayer2: null));
+      }
+    });
   }
 
   late TextEditingController nameController1;
@@ -67,7 +79,7 @@ class HomeCubit extends Cubit<HomeState> {
 
       emit(
         state.copyWith(
-          status: HomeStateStatus.gameStarted,
+          status: GameStateStatus.gameStarted,
           player1: player1,
           player2: player2,
           errorTextPlayer1: null,
@@ -96,21 +108,25 @@ class HomeCubit extends Cubit<HomeState> {
         clickedPlayer.wonGames - otherPlayer.wonGames >= 2) {
       emit(
         state.copyWith(
-          status: HomeStateStatus.setWon,
+          status: GameStateStatus.setWon,
           player1: player1,
           player2: player2,
+          winner: clickedPlayer,
         ),
       );
+      await Future<Duration?>.delayed(const Duration(seconds: 2));
+      emit(state.copyWith(status: GameStateStatus.initial));
     } else {
       emit(
         state.copyWith(
           player1: player1,
           player2: player2,
-          status: HomeStateStatus.gameWon,
+          winner: clickedPlayer,
+          status: GameStateStatus.gameWon,
         ),
       );
       await Future<Duration?>.delayed(const Duration(seconds: 2));
-      emit(state.copyWith(status: HomeStateStatus.gameStarted));
+      emit(state.copyWith(status: GameStateStatus.gameStarted));
     }
   }
 

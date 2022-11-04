@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tennis/home/view/screen/home_screen.dart';
+import 'package:tennis/game/view/screen/game_screen.dart';
 
 void main() {
   runApp(const App());
@@ -13,7 +13,7 @@ class App extends StatelessWidget {
     return const MaterialApp(
       title: 'Tennis',
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: GameScreen(),
     );
   }
 }

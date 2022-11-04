@@ -10,4 +10,8 @@ class Player with _$Player {
     @Default(0) int wonGames,
     @Default('0') String currentGameScore,
   }) = _Player;
+
+  const Player._();
+
+  String get fullName => '$firstName $lastName';
 }

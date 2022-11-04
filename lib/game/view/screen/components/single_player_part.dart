@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:tennis/game/models/player.dart';
+import 'package:tennis/game/view/cubit/game_cubit.dart';
 import 'package:tennis/gen/assets.gen.dart';
-import 'package:tennis/home/models/player.dart';
-
-import '../../cubit/home_cubit.dart';
 
 class SinglePlayerPart extends StatelessWidget {
   const SinglePlayerPart({
@@ -22,7 +21,7 @@ class SinglePlayerPart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = context.read<HomeCubit>();
+    final bloc = context.read<GameCubit>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -37,10 +36,10 @@ class SinglePlayerPart extends StatelessWidget {
         if (bloc.state.status.isGameStarted) ...[
           Text(
             '${player.firstName} ${player.lastName}',
-            style: Theme.of(context).textTheme.headline4,
+            style: Theme.of(context).textTheme.headline6,
           ),
           const SizedBox(height: 16),
-          Text('Game won: ${player.wonGames}'),
+          Text('Games won: ${player.wonGames}'),
           const SizedBox(height: 16),
           Text('Current score: ${player.currentGameScore}'),
           const SizedBox(height: 32),
