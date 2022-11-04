@@ -16,8 +16,7 @@ enum GameStateStatus {
 class GameState with _$GameState {
   const factory GameState({
     @Default(GameStateStatus.initial) GameStateStatus status,
-    @Default(Player()) Player player1,
-    @Default(Player()) Player player2,
+    @Default([Player(), Player()]) List<Player> players,
     @Default(Player()) Player winner,
     String? errorTextPlayer1,
     String? errorTextPlayer2,

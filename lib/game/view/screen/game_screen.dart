@@ -18,7 +18,6 @@ class GameScreen extends StatelessWidget {
 class _GameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<GameCubit>();
     ScaffoldFeatureController<SnackBar, SnackBarClosedReason>?
         snackBarController;
 
@@ -26,59 +25,49 @@ class _GameScreen extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-          child: BlocConsumer<GameCubit, GameState>(
-            listener: (context, state) {
-              if (state.status.isGameEnded || state.status.isSetEnded) {
-                snackBarController = ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${state.winner.fullName} won the '
-                      '${state.status.isGameEnded ? 'game' : 'set'}!',
-                    ),
-                  ),
-                );
-              } else {
-                snackBarController?.close();
-                snackBarController = null;
-              }
-            },
-            builder: (context, state) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: SinglePlayerPart(
-                          player: state.player1,
-                          nameController: cubit.nameController1,
-                          errorText: state.errorTextPlayer1,
-                          playerType: PlayerType.player1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Expanded(child: SinglePlayerPart(playerIdx: 0)),
+                  SizedBox(width: 64),
+                  Expanded(child: SinglePlayerPart(playerIdx: 1)),
+                ],
+              ),
+              BlocConsumer<GameCubit, GameState>(
+                listener: (context, state) {
+                  if (state.status.isGameEnded || state.status.isSetEnded) {
+                    snackBarController =
+                        ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${state.winner.name} won the '
+                          '${state.status.isGameEnded ? 'game' : 'set'}!',
                         ),
                       ),
-                      const SizedBox(width: 64),
-                      Expanded(
-                        child: SinglePlayerPart(
-                          player: state.player2,
-                          nameController: cubit.nameController2,
-                          errorText: state.errorTextPlayer2,
-                          playerType: PlayerType.player2,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (state.status.isInitial)
-                    Padding(
+                    );
+                  } else {
+                    snackBarController?.close();
+                    snackBarController = null;
+                  }
+                },
+                builder: (context, state) {
+                  if (state.status.isInitial) {
+                    return Padding(
                       padding: const EdgeInsets.only(top: 16),
                       child: ElevatedButton(
-                        onPressed: cubit.startGame,
+                        onPressed: context.read<GameCubit>().startGame,
                         child: const Text('Start game'),
                       ),
-                    ),
-                ],
-              );
-            },
+                    );
+                  } else {
+                    return const SizedBox();
+                  }
+                },
+              ),
+            ],
           ),
         ),
       ),

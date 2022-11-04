@@ -55,8 +55,8 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void startGame() {
-    final name1 = nameController1.text;
-    final name2 = nameController2.text;
+    final name1 = nameController1.text.trim();
+    final name2 = nameController2.text.trim();
     final errorTextPlayer1 = _nameError(name1);
     final errorTextPlayer2 = _nameError(name2);
 
@@ -68,50 +68,35 @@ class GameCubit extends Cubit<GameState> {
         ),
       );
     } else {
-      final player1 = Player(
-        firstName: name1.split(' ')[0],
-        lastName: name1.split(' ')[1],
-      );
-      final player2 = Player(
-        firstName: name2.split(' ')[0],
-        lastName: name2.split(' ')[1],
-      );
-
       emit(
-        state.copyWith(
+        GameState(
           status: GameStateStatus.gameStarted,
-          player1: player1,
-          player2: player2,
-          errorTextPlayer1: null,
-          errorTextPlayer2: null,
+          players: [Player(name: name1), Player(name: name2)],
         ),
       );
     }
   }
 
-  Future<void> _gameWon(
-    PlayerType playerType,
-    Player clickedPlayer,
-    Player otherPlayer,
-  ) async {
+  Future<void> _gameWon(int playerIdx) async {
+    final clickedPlayer = state.players[playerIdx];
+    final otherPlayer = state.players[1 - playerIdx];
     final newClickedPlayer = clickedPlayer.copyWith(
       currentGameScore: '0',
       wonGames: clickedPlayer.wonGames + 1,
     );
     final newOtherPlayer = otherPlayer.copyWith(currentGameScore: '0');
-    final player1 =
-        playerType == PlayerType.player1 ? newClickedPlayer : newOtherPlayer;
-    final player2 =
-        playerType == PlayerType.player2 ? newClickedPlayer : newOtherPlayer;
 
-    if (clickedPlayer.wonGames >= 6 &&
+    final updatedPlayers = [const Player(), const Player()]
+      ..[playerIdx] = newClickedPlayer
+      ..[1 - playerIdx] = newOtherPlayer;
+
+    if (clickedPlayer.wonGames >= 5 &&
         clickedPlayer.wonGames - otherPlayer.wonGames >= 2) {
       emit(
         state.copyWith(
-          status: GameStateStatus.setWon,
-          player1: player1,
-          player2: player2,
+          players: updatedPlayers,
           winner: clickedPlayer,
+          status: GameStateStatus.setWon,
         ),
       );
       await Future<Duration?>.delayed(const Duration(seconds: 2));
@@ -119,8 +104,7 @@ class GameCubit extends Cubit<GameState> {
     } else {
       emit(
         state.copyWith(
-          player1: player1,
-          player2: player2,
+          players: updatedPlayers,
           winner: clickedPlayer,
           status: GameStateStatus.gameWon,
         ),
@@ -130,39 +114,45 @@ class GameCubit extends Cubit<GameState> {
     }
   }
 
-  void clickTennis(PlayerType playerType) {
-    var clickedPlayer =
-        playerType == PlayerType.player1 ? state.player1 : state.player2;
-    var otherPlayer =
-        playerType == PlayerType.player1 ? state.player2 : state.player1;
+  void clickTennis(int playerIdx) {
+    var clickedPlayer = state.players[playerIdx];
+    var otherPlayer = state.players[1 - playerIdx];
 
     var isGameWon = false;
-    if (clickedPlayer.currentGameScore == '0') {
-      clickedPlayer = clickedPlayer.copyWith(currentGameScore: '15');
-    } else if (clickedPlayer.currentGameScore == '15') {
-      clickedPlayer = clickedPlayer.copyWith(currentGameScore: '30');
-    } else if (clickedPlayer.currentGameScore == '30') {
-      clickedPlayer = clickedPlayer.copyWith(currentGameScore: '40');
-    } else if (clickedPlayer.currentGameScore == '40') {
-      if (otherPlayer.currentGameScore == 'A') {
-        otherPlayer = otherPlayer.copyWith(currentGameScore: '40');
-      } else if (otherPlayer.currentGameScore == '40') {
-        clickedPlayer = clickedPlayer.copyWith(currentGameScore: 'A');
-      } else {
+    switch (clickedPlayer.currentGameScore) {
+      case '0':
+        clickedPlayer = clickedPlayer.copyWith(currentGameScore: '15');
+        break;
+      case '15':
+        clickedPlayer = clickedPlayer.copyWith(currentGameScore: '30');
+        break;
+      case '30':
+        clickedPlayer = clickedPlayer.copyWith(currentGameScore: '40');
+        break;
+      case '40':
+        switch (otherPlayer.currentGameScore) {
+          case 'A':
+            otherPlayer = otherPlayer.copyWith(currentGameScore: '40');
+            break;
+          case '40':
+            clickedPlayer = clickedPlayer.copyWith(currentGameScore: 'A');
+            break;
+          default:
+            isGameWon = true;
+            _gameWon(playerIdx);
+        }
+        break;
+      case 'A':
         isGameWon = true;
-        _gameWon(playerType, clickedPlayer, otherPlayer);
-      }
-    } else if (clickedPlayer.currentGameScore == 'A') {
-      isGameWon = true;
-      _gameWon(playerType, clickedPlayer, otherPlayer);
+        _gameWon(playerIdx);
     }
     if (!isGameWon) {
-      final player1 =
-          playerType == PlayerType.player1 ? clickedPlayer : otherPlayer;
-      final player2 =
-          playerType == PlayerType.player2 ? clickedPlayer : otherPlayer;
       emit(
-        state.copyWith(player1: player1, player2: player2),
+        state.copyWith(
+          players: [const Player(), const Player()]
+            ..[playerIdx] = clickedPlayer
+            ..[1 - playerIdx] = otherPlayer,
+        ),
       );
     }
   }
