@@ -1,6 +1,6 @@
 # Tennis
 
-Flutter application which Tennis game
+Flutter application which implements a Tennis game
 
 ---
 
