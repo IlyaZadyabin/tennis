@@ -91,7 +91,7 @@ class GameCubit extends Cubit<GameState> {
       ..[1 - playerIdx] = newOtherPlayer;
 
     if (clickedPlayer.wonGames >= 5 &&
-        clickedPlayer.wonGames - otherPlayer.wonGames >= 2) {
+        clickedPlayer.wonGames - otherPlayer.wonGames >= 1) {
       emit(
         state.copyWith(
           players: updatedPlayers,
